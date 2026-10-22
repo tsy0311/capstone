@@ -1,0 +1,116 @@
+project:
+  name: "LLM-Based Startup Risk Profiling and Funding Outcome Prediction"
+  version: "1.0.0"
+  random_seed: 42
+
+dataset:
+  name: "Crunchbase Startups / Startup Success Prediction"
+  source: "Kaggle"
+  url: "https://www.kaggle.com/datasets/manishkc06/startup-success-prediction"
+  alternative_url: "https://www.kaggle.com/datasets/arindamkhandai/startup-investments-crunchbase"
+  file: "data/startup data.csv"
+  description: >
+    Public business information on startups including funding rounds,
+    categories, descriptions, founding dates, investor counts, and
+    funding outcome status (acquired, IPO, closed, operating).
+  target: "status"
+  target_classes:
+    success: ["acquired", "ipo"]
+    failure: ["closed"]
+    ongoing: ["operating"]
+  binary_target: "funding_success"  # 1 = acquired/IPO, 0 = closed
+
+preprocessing:
+  text_columns:
+    - "description"
+    - "category"
+    - "name"
+  numerical_columns:
+    - "funding_total_usd"
+    - "funding_rounds"
+    - "founded_year"
+    - "founded_month"
+    - "first_funding_at"
+    - "last_funding_at"
+  categorical_columns:
+    - "country_code"
+    - "state_code"
+    - "region"
+    - "city"
+    - "market"
+    - "status_category"
+  engineered_features:
+    - "company_age"           # current_year - founded_year
+    - "funding_velocity"      # funding_total / company_age
+    - "rounds_per_year"       # funding_rounds / company_age
+    - "time_to_first_funding" # months from founding to first funding
+    - "funding_span"          # months between first and last funding
+    - "avg_round_size"        # funding_total / funding_rounds
+    - "description_length"    # word count of description
+    - "description_sentiment" # sentiment score from LLM
+    - "description_readability" # Flesch reading ease
+    - "has_biotech"           # binary: biotech category
+
+  llm_features:
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_dim: 384
+    description_embedding: "description_emb"
+    risk_keywords:
+      high_risk: ["pre-revenue", "early stage", "prototype", "pre-seed", "unproven"]
+      medium_risk: ["growth", "expansion", "Series A", "Series B", "scalable"]
+      low_risk: ["profitable", "acquisition", "IPO", "market leader", "established"]
+
+models:
+  baseline:
+    name: "Logistic Regression"
+    class_weight: "balanced"
+    max_iter: 1000
+
+  candidates:
+    - name: "Logistic Regression"
+      class_weight: "balanced"
+      max_iter: 1000
+
+    - name: "Decision Tree"
+      max_depth: 5
+      class_weight: "balanced"
+
+    - name: "Random Forest"
+      n_estimators: 200
+      max_depth: 10
+      class_weight: "balanced"
+      random_state: 42
+
+    - name: "XGBoost"
+      n_estimators: 200
+      max_depth: 6
+      learning_rate: 0.1
+      use_label_encoder: false
+      eval_metric: "logloss"
+      random_state: 42
+
+    - name: "LightGBM"
+      n_estimators: 200
+      max_depth: -1
+      learning_rate: 0.1
+      class_weight: "balanced"
+      random_state: 42
+
+  optuna:
+    n_trials: 50
+    study_name: "startup_funding_optimization"
+    sampler: "TPESampler"
+
+training:
+  test_size: 0.2
+  validation_size: 0.25  # of remaining 80%
+  stratify: true
+  cv_folds: 5
+  scoring: "roc_auc"
+
+business:
+  # Hypothetical assumptions for business evaluation
+  avg_deal_size: 5000000        # USD, hypothetical average funding round
+  investor_due_diligence_cost: 50000  # USD per startup evaluated
+  missed_opportunity_cost: 5000000   # USD per missed successful startup
+  false_positive_cost: 50000         # USD per incorrectly flagged startup
