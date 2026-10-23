@@ -1,6 +1,6 @@
 # Technical Report
 
-## LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable Machine Learning
+## LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable AI
 
 **Author**: ADS  
 **Date**: October 2026  

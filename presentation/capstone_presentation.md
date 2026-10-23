@@ -1,6 +1,6 @@
 # Capstone Presentation
 
-## LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable Machine Learning
+## LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable AI
 
 **Author**: ADS  
 **Programme**: Master of Computer Science  
@@ -10,7 +10,7 @@
 
 ## Slide 1: Title and Introduction
 
-**LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable Machine Learning**
+**LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable AI**
 
 Author: ADS  
 Programme: Master of Computer Science  

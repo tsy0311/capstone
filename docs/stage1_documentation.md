@@ -1,6 +1,6 @@
 # Stage 1 Documentation: Introduction, Literature Review, and Methodology
 
-**Project Title**: LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable Machine Learning
+**Project Title**: LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable AI
 
 **Author**: ADS  
 **Institution**: [University Name]  
@@ -77,7 +77,7 @@ Traditionally, startup evaluation has relied on qualitative assessment by experi
 
 Machine learning has demonstrated significant potential in financial prediction tasks, including credit scoring (Lessmann et al., 2015), fraud detection (West & Bhattacharya, 2016), and bankruptcy prediction (Barboza et al., 2017). However, its application to startup funding outcome prediction remains comparatively underexplored, partly due to data availability constraints and the inherent complexity of startup ecosystems. Recent advances in large language models (LLMs) — such as BERT (Devlin et al., 2019), RoBERTa (Liu et al., 2019), and sentence-transformers (Reimers & Gurevych, 2019) — offer new possibilities for extracting structured information from unstructured startup descriptions, potentially capturing risk signals that traditional financial metrics miss.
 
-This project investigates whether publicly available business information, combined with LLM-derived text features and explainable machine learning, can produce a useful risk profiling system for startup funding outcomes. The approach distinguishes between *predicting* funding outcomes (a statistical task) and *causing* better outcomes (which requires intervention evidence), maintaining this distinction throughout.
+This project investigates whether publicly available business information, combined with LLM-derived text features and explainable AI, can produce a useful risk profiling system for startup funding outcomes. The approach distinguishes between *predicting* funding outcomes (a statistical task) and *causing* better outcomes (which requires intervention evidence), maintaining this distinction throughout.
 
 ## 1.2 Problem Statement
 

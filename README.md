@@ -1,4 +1,4 @@
-# LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable Machine Learning
+# LLM-Based Startup Risk Profiling and Funding Outcome Prediction Using Public Business Information and Explainable AI
 
 ## An End-to-End Machine Learning Solution
 
