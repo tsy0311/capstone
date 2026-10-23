@@ -94,7 +94,6 @@
 - 7.6 Threshold Optimization
 - 7.7 Final Model Selection
 - 7.8 Error Analysis
-
 ### Chapter 8: Explainability and Business Interpretation
 - 8.1 Global Feature Importance (SHAP)
 - 8.2 Local Prediction Explanations
@@ -127,6 +126,8 @@
 - 11.6 Data Drift and Model Monitoring
 - 11.7 PDPA Malaysia Compliance
 - 11.8 Human Oversight and Limitations
+- 11.9 Security
+- 11.10 Risks of Unfair Treatment
 
 ### Chapter 12: Business Implications and Recommendations
 - 12.1 Business Evaluation Framework
@@ -156,6 +157,7 @@
 - Appendix E: Test Suite
 - Appendix F: Reproducibility Instructions
 - Appendix G: Defence Questions and Model Answers
+- Appendix H: Executive Technical Summary
 
 ---
 
@@ -417,21 +419,56 @@ Pipeline([
 
 Logistic Regression with `class_weight="balanced"` and `max_iter=1000`. Provides interpretable coefficients and a performance floor.
 
+| Aspect | Detail |
+|--------|--------|
+| **Type** | Linear model |
+| **Key parameters** | class_weight=balanced, max_iter=1000 |
+| **Strengths** | Interpretable, fast, good baseline |
+| **Weaknesses** | May underfit non-linear relationships |
+
 ## 6.3 Decision Tree
 
 `DecisionTreeClassifier(max_depth=5, class_weight="balanced")`. Captures non-linear patterns; interpretable tree structure.
+
+| Aspect | Detail |
+|--------|--------|
+| **Type** | Single tree |
+| **Key parameters** | max_depth=5, class_weight=balanced |
+| **Strengths** | Captures non-linear patterns, interpretable |
+| **Weaknesses** | Prone to overfitting, high variance |
 
 ## 6.4 Random Forest
 
 `RandomForestClassifier(n_estimators=200, max_depth=10, class_weight="balanced", n_jobs=-1)`. Reduces variance through averaging.
 
+| Aspect | Detail |
+|--------|--------|
+| **Type** | Ensemble of trees |
+| **Key parameters** | n_estimators=200, max_depth=10 |
+| **Strengths** | Reduces overfitting, handles interactions |
+| **Weaknesses** | Less interpretable, slower inference |
+
 ## 6.5 XGBoost
 
 `XGBClassifier(n_estimators=200, max_depth=6, learning_rate=0.1, eval_metric="logloss", n_jobs=-1)`. Regularized gradient boosting with native missing value handling.
 
+| Aspect | Detail |
+|--------|--------|
+| **Type** | Gradient boosting |
+| **Key parameters** | n_estimators=200, max_depth=6, Optuna-optimized |
+| **Strengths** | State-of-the-art on tabular data, handles missing values |
+| **Weaknesses** | More hyperparameters, potential overfitting |
+
 ## 6.6 LightGBM
 
 `LGBMClassifier(n_estimators=200, learning_rate=0.1, class_weight="balanced", n_jobs=-1)`. Leaf-wise growth for efficiency.
+
+| Aspect | Detail |
+|--------|--------|
+| **Type** | Gradient boosting (leaf-wise) |
+| **Key parameters** | n_estimators=200, class_weight=balanced |
+| **Strengths** | Fast training, memory efficient |
+| **Weaknesses** | Sensitive to small datasets, leaf-wise growth can overfit |
 
 ## 6.7 Optuna Hyperparameter Optimization
 
@@ -445,7 +482,19 @@ Logistic Regression with `class_weight="balanced"` and `max_iter=1000`. Provides
 
 ## 7.1 Test Set Performance
 
-*(Results populated upon running the pipeline. The model_comparison.md report contains the comparison table.)*
+*(Results populated upon running the pipeline. The model comparison table below is populated when the training script or notebook 04 is executed.)*
+
+### Evaluation Metrics and Business Relevance
+
+| Metric | Description | Business Relevance |
+|--------|-------------|---------------------|
+| Accuracy | Overall correct prediction rate | Misleading for imbalanced data |
+| Precision | TP / (TP + FP) | False positives waste due diligence budget |
+| Recall | TP / (TP + FN) | False negatives = missed opportunities |
+| F1-Score | Harmonic mean of precision and recall | Balanced view of errors |
+| ROC-AUC | Area under ROC curve | Threshold-independent discrimination |
+| PR-AUC | Area under precision-recall curve | Better for imbalanced data |
+| Brier Score | Mean squared error of probabilities | Calibration quality |
 
 ## 7.2 Model Comparison Table
 
@@ -477,6 +526,16 @@ Logistic Regression with `class_weight="balanced"` and `max_iter=1000`. Provides
 Cost-sensitive threshold minimizing: `FP × $50,000 + FN × $5,000,000`
 
 *(Generated → `reports/figures/threshold_analysis_<model>.png`)*
+
+### Generated Evaluation Artifacts
+
+The following artifacts are generated during evaluation:
+- `reports/figures/confusion_matrix_<model>.png`
+- `reports/figures/roc_curve_<model>.png`
+- `reports/figures/pr_curve_<model>.png`
+- `reports/figures/calibration_<model>.png`
+- `reports/figures/threshold_analysis_<model>.png`
+- `reports/figures/model_comparison_test.csv`
 
 ## 7.7 Final Model Selection
 
@@ -653,9 +712,23 @@ The dataset contains no personal identifiable information (PII). Company-level d
 ## 11.3 Fairness and Subgroup Analysis
 
 **Potential fairness concerns**:
-- **Geographic bias**: US-based startups are over-represented in Crunchbase. Predictions for non-US startups may be less reliable.
-- **Market bias**: Software startups dominate; predictions for biotech or hardware may be less reliable.
-- **Temporal bias**: Older startups (founded 2000-2010) have had more time to achieve exits. Predictions for recent startups (founded 2020+) are inherently more uncertain.
+
+| Bias Type | Description | Risk Level |
+|-----------|-------------|------------|
+| Survivorship bias | Crunchbase over-represents funded startups | High |
+| Geographic bias | US-based companies dominate (~60%+) | Medium |
+| Market bias | Software startups over-represented | Medium |
+| Temporal bias | Older startups have more time to achieve exits | Medium |
+| Size bias | Better-funded startups have more complete data | Low |
+
+**Subgroup performance** should be evaluated by:
+- **Country**: ROC-AUC by country (US vs. non-US)
+- **Market**: ROC-AUC by market category (Software, Biotech, Hardware)
+- **Founding decade**: ROC-AUC by founding decade (2000s, 2010s, 2020s)
+
+If subgroup performance varies by >10%, fairness mitigation strategies should be considered.
+
+**Proxy discrimination**: No protected attributes (race, gender, age) are present in the data. However, geographic location (country_code, state_code) may act as a proxy for demographic composition. This is monitored but not used for discrimination — it is used for contextual prediction.
 
 **Mitigation**:
 - Subgroup performance analysis (country, market, founding decade)
@@ -678,28 +751,32 @@ SHAP provides global and local explanations. The system displays the top contrib
 
 Startup ecosystem dynamics change over time — new markets emerge, funding cycles shift, macroeconomic conditions vary. The model must be monitored for:
 
-- **Feature drift**: PSI of funding_total, company_age, market distribution
-- **Label drift**: Changing success/failure rates over time
-- **Performance drift**: ROC-AUC degradation on new data
-- **Concept drift**: Changing relationships between features and outcomes
+| Monitoring Aspect | Method | Alert Threshold |
+|-------------------|--------|-----------------|
+| Feature drift | Population Stability Index (PSI) | PSI > 0.2 |
+| Label drift | Success/failure rate change | >5% change |
+| Performance drift | ROC-AUC on new labelled data | >5% degradation |
+| Concept drift | Feature-outcome relationship change | Quarterly evaluation |
+
+**Retraining trigger**: PSI > 0.2 OR performance degradation >5%
 
 ## 11.7 PDPA Malaysia Compliance
 
 The Personal Data Protection Act 2010 (PDPA) governs personal data processing in Malaysia. Key principles and their applicability:
 
-| PDPA Principle | Applicability to This Project |
-|----------------|-------------------------------|
-| Consent | N/A — no personal data collected |
-| Notice and Choice | N/A — company-level data only |
-| Purpose Limitation | Data used for stated research purpose only |
-| Data Minimisation | No personal data; company-level only |
-| Data Quality | Validation module ensures data quality |
-| Data Security | Model artifacts and API secured; no sensitive data stored |
-| Access and Correction | N/A — no personal data subjects |
-| Retention | Data deleted after research completion |
-| Data Transfer | Public dataset, no cross-border restrictions |
+| PDPA Principle | Applicability | Status |
+|----------------|---------------|--------|
+| **General Principle** (Section 6) | Personal data processed only with consent | N/A — no personal data |
+| **Notice and Choice** (Sections 7-8) | Data subject notified of processing | N/A — no personal data |
+| **Purpose Limitation** (Section 9) | Data used only for stated purpose | ✅ — research purpose stated |
+| **Data Minimisation** (Section 10) | Collect only necessary data | ✅ — company-level only |
+| **Data Quality** (Section 11) | Accurate, current, complete | ✅ — validation module |
+| **Security Safeguards** (Section 12) | Reasonable security measures | ✅ — local storage, no secrets |
+| **Retention Limitation** (Section 13) | Retain only as long as necessary | ✅ — data deleted post-research |
+| **Access and Correction** (Sections 14-15) | Data subject access rights | N/A — no personal data |
+| **Data Transfer** (Section 129) | Cross-border transfer restrictions | ✅ — public dataset |
 
-A Data Protection Impact Assessment (DPIA) is recommended before production deployment, even though no personal data is processed.
+A Data Protection Impact Assessment (DPIA) is recommended before production deployment, even though no personal data is processed. This assessment is for educational purposes and does not constitute legal advice.
 
 ## 11.8 Human Oversight and Limitations
 
@@ -707,6 +784,25 @@ A Data Protection Impact Assessment (DPIA) is recommended before production depl
 - **Threshold transparency**: Users can adjust decision threshold based on risk appetite
 - **Explanation availability**: SHAP explanations provided for every prediction
 - **Limitation disclosure**: The application clearly states predictions are probabilistic, not certain
+- **No automated decisions**: System does not make funding decisions — it provides information to support human decisions
+
+## 11.9 Security
+
+- No secrets in source code
+- API input validation via Pydantic
+- Error handling prevents information leakage
+- Model artifacts not committed to version control
+- Application runs locally by default
+- No external API dependencies for core functionality
+
+## 11.10 Risks of Unfair Treatment
+
+| Risk | Mitigation |
+|------|-----------|
+| Geographic bias in predictions | Subgroup analysis, transparency about limitations |
+| Market category bias | Subgroup analysis by market |
+| Temporal bias (recent startups harder to predict) | Transparency about prediction uncertainty |
+| Self-fulfilling prophecy (model reinforces existing biases) | Human oversight, periodic bias audit |
 
 # Chapter 12: Business Implications and Recommendations
 
@@ -1012,6 +1108,69 @@ Monitor PSI of feature distributions. Alert if PSI > 0.2. Evaluate model on new 
 
 **Q15: What would you do differently?**  
 Collect founder/team data, implement survival analysis, design A/B tests, add investor network features, build real-time pipeline, fine-tune domain-specific LLM.
+
+## Appendix H: Executive Technical Summary
+
+This appendix provides a condensed technical overview of the complete project for quick reference.
+
+### H.1 Executive Summary
+
+This project implements a complete machine learning pipeline for predicting startup funding outcomes using publicly available business information. The pipeline covers data acquisition, validation, EDA, feature engineering (including LLM-derived text features), model training (5 models), evaluation (7 metrics), SHAP explainability, Streamlit dashboard, FastAPI REST API, and 41 automated tests. Responsible AI considerations including PDPA compliance, fairness, and human oversight are addressed.
+
+### H.2 Dataset
+
+- **Source**: Kaggle (Crunchbase-derived startup data)
+- **Target**: Binary (acquired/IPO = success, closed = failure)
+- **Features**: Funding total, rounds, founding dates, location, market, description
+
+### H.3 Methodology
+
+CRISP-DM framework. Preprocessing pipeline with FeatureEngineer, RiskKeywordExtractor, TextFeatureExtractor, and ColumnTransformer. Stratified train/val/test split (60/20/20). 5-fold cross-validation. Optuna hyperparameter optimization (50 trials, TPE sampler).
+
+### H.4 Feature Engineering
+
+10 engineered features:
+- Financial: funding_velocity, rounds_per_year, avg_round_size
+- Temporal: company_age, time_to_first_funding, funding_span
+- Text: description_length, description_readability
+- Risk: high_risk_score, medium_risk_score, low_risk_score
+
+Optional: 384-dim sentence-transformer embeddings (all-MiniLM-L6-v2)
+
+### H.5 Evaluation
+
+7 metrics: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, Brier score.
+Cost-sensitive threshold optimization: minimise FP×$50K + FN×$5M.
+Calibration analysis for probability reliability.
+
+### H.6 Explainability
+
+SHAP TreeExplainer for tree-based models. Global summary plot + local waterfall plot. Permutation importance as cross-check.
+
+### H.7 Application
+
+- **Streamlit**: Single + batch prediction, risk categorization, SHAP explanation
+- **FastAPI**: 5 endpoints (health, model info, predict, batch predict, risk categories)
+- **Tests**: 41 tests (preprocessing + prediction modules)
+
+### H.8 Responsible AI
+
+- PDPA 2010 compliance (company-level data, no PII)
+- Fairness: subgroup analysis by country, market, founding decade
+- Human oversight: decision-support, not automated decisions
+- Data drift: PSI monitoring, quarterly retraining
+
+### H.9 Limitations
+
+1. **Survivorship bias**: Dataset over-represents funded startups
+2. **No causal claims**: Observational data, correlations only
+3. **No intervention outcomes**: Business impact is hypothetical
+4. **Geographical bias**: US-based companies over-represented
+5. **Temporal drift**: Startup dynamics change over time
+
+### H.10 Conclusion
+
+This project demonstrates a complete, reproducible, end-to-end machine learning solution for startup risk profiling. The pipeline covers every stage from data acquisition to deployment, with a clear distinction between measured findings and hypothetical scenarios. The system is designed as a decision-support tool, not an automated decision-maker.
 
 ---
 

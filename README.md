@@ -6,6 +6,15 @@
 
 This project implements a complete data science pipeline for predicting startup funding outcomes using public business information, financial metrics, and LLM-derived text features. It covers data acquisition, validation, EDA, feature engineering, model training, evaluation, explainability, deployment, and responsible AI assessment.
 
+### Deliverables
+
+| File | Description |
+|------|-------------|
+| `README.md` | Project overview and quick start guide |
+| `docs/stage1_documentation.md` | Stage 1: Introduction, Literature Review, Methodology |
+| `docs/stage2_full_dissertation.md` | Stage 2: Full 14-chapter dissertation + appendices |
+| `presentation/capstone_presentation.md` | 15-slide presentation + 15 defence Q&A |
+
 ### Quick Start
 
 ```bash
@@ -36,53 +45,6 @@ uvicorn api.main:app --reload --port 8000
 
 # 6. Run tests
 pytest tests/ -v
-```
-
-### Project Structure
-
-```
-startup-risk-profiling/
-├── config/
-│   └── config.yaml              # Project configuration
-├── data/
-│   ├── README.md                # Dataset documentation
-│   └── startup_data.csv         # Dataset (download separately)
-├── notebooks/
-│   ├── 01_data_acquisition_and_validation.ipynb
-│   ├── 02_exploratory_data_analysis.ipynb
-│   ├── 03_feature_engineering.ipynb
-│   ├── 04_model_training_and_evaluation.ipynb
-│   └── 05_model_explainability.ipynb
-├── src/
-│   ├── __init__.py
-│   ├── data_loader.py           # Data loading and target encoding
-│   ├── validation.py            # Data validation checks
-│   ├── preprocessing.py         # Feature engineering, LLM embeddings, pipelines
-│   ├── train.py                 # Model training and optimization
-│   ├── evaluate.py              # Evaluation metrics and plots
-│   └── predict.py              # Inference and SHAP explanations
-├── models/
-│   └── README.md                # Model artifacts info
-├── app/
-│   └── streamlit_app.py         # Interactive dashboard
-├── api/
-│   └── main.py                  # FastAPI REST API
-├── tests/
-│   ├── test_preprocessing.py    # 12 preprocessing tests
-│   └── test_prediction.py       # 13 prediction tests
-├── reports/
-│   ├── figures/                 # Generated plots
-│   ├── model_comparison.md      # Model comparison report
-│   ├── technical_report.md      # Complete technical report
-│   └── responsible_ai_assessment.md
-├── presentation/
-│   └── capstone_presentation.md # 15 slides + 15 defence Q&A
-├── docs/
-│   ├── stage1_documentation.md  # Introduction, Lit Review, Methodology
-│   └── stage2_full_dissertation.md
-├── README.md
-├── requirements.txt
-└── .gitignore
 ```
 
 ### Dataset
